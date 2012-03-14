@@ -1,6 +1,6 @@
 # Salesforce for iPad #
 
-Salesforce for iPad is a free, unofficial, unsupported, open-source app from Salesforce Labs. It's the easiest way to browse your apps, tabs, and records in any Salesforce environment. Create, edit, clone, and delete standard and custom records. Supports every page layout, every field, every related list, every Group Edition thru Unlimited Edition org. With Salesforce for iPad, you're an unstoppable force for the cloud! 
+Salesforce for iPad is a free, unofficial, unsupported, open-source native iPad app from Salesforce Labs. It's the easiest way to browse your apps, tabs, and records in any Salesforce environment. Create, edit, clone, and delete standard and custom records. Supports every page layout, every field, every related list, every Group Edition thru Unlimited Edition org. With Salesforce for iPad, you're an unstoppable force for the cloud! 
 
 [Install Salesforce for iPad on the App Store!](http://itunes.apple.com/us/app/salesforce-for-ipad/id458454196?mt=8)
 
@@ -197,12 +197,13 @@ Much is there to do on Salesforce for iPad. Some unsolved problems:
 
 Some other things to do:
 
-- `RecentRecordsController` should do metadata describes on objects, as the response contains the user's recently accessed records on the server. Similarly `ObjectLookupController` could display as default, before searching, a list of recent records of the type for which the user is searching.
+- `RecentRecordsController` should do additional metadata describes on objects because the response contains the user's recently viewed records, and merge those results in with (or do away entirely with) the current recent records feature, which only includes records accessed on Salesforce for iPad. 
+- `ObjectLookupController` should display as default, before the user searches, a list of recent records of the type for which the user is searching.
 - *OpportunityLineItems* and *QuoteLineItems* need special handling (price books, products) and are not available to create or edit in the app today.
 - Salesforce for iPad doesn't support creating or editing objects that do not have page layouts (e.g. contact roles, account teams, etc) with the exception of Case Comments, for which I added a special hack to support. Nor does the app support viewing objects without page layouts, except in related lists.
 - Object list views have an API, but the API requires sysadmin (MAD/VAD). Not workable for normal users.
 - Chatter feeds are a popular request. The iOS Chatter team aims to release some reusable components later this year.
-- The Account News feature uses Google's News API, which Google deprecated in May 2011. SFiPad will eventually need a replacement news source or I'll have to remove the feature.
+- The Account News feature uses Google's News API, which Google deprecated in May 2011. Salesforce for iPad will eventually need a replacement news source or I'll have to remove the feature.
 - Offline access is a feature that adds convenience at the cost of added complexity (secure storage, record sync, delayed upserts) and security considerations (it allows downloading mass amounts of data)
 - PIN lock
 - Editing rich text fields
