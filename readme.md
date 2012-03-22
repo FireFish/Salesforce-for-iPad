@@ -64,7 +64,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 ## Getting Started ##
 
 1. Grab the Salesforce for iPad source code: `git clone https://github.com/ForceDotComLabs/Salesforce-for-iPad.git`
-2. Salesforce for iPad connects to Salesforce securely with OAuth. If you don't have an OAuth client ID, create a new Remote Access application (Setup -> Develop -> Remote Access). Copy your OAuth Client ID into the `OAuthClientID` variable in `OAuthViewController.h`.
+2. Salesforce for iPad connects to Salesforce securely with OAuth. If you don't have an OAuth client ID, create a new Remote Access application (Setup -> Develop -> Remote Access). Use the OAuth success endpoint for your callback URL: e.g. `https://login.salesforce.com/services/oauth2/success` for production. Copy your OAuth Client ID into the `OAuthClientID` variable in `OAuthViewController.h`.
 3. (Optional) Salesforce for iPad connects to environments that are not otherwise API-enabled, like GE and PE orgs, by using a partner token. If you have a Salesforce partner token, paste it into `RootViewController.h` under `PartnerTokenId`.
 4. (Optional) If you have a Google API key, paste it into `RecordNewsViewController.h` under `NEWS_API_KEY`.
 5. Build and run, and you should be good to go!
