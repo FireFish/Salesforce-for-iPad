@@ -193,7 +193,6 @@ Much is there to do on Salesforce for iPad. Some unsolved problems:
 - *Standard Objects* deserve special handling. Lists of contacts and leads in the should be sorted by last name. Standard objects need additional customized listviews, like My Upcoming Events, My Open Tasks, My Opportunities Closing This Month. How flexible and declaractive can we make in-app list views given we don't have access to standard list views?
 - I find the landscape experience to be far superior to portrait. In portrait, navigating down enough levels of windows will keep reassigning your browse button, and you'll have to drag all the way back to the top to access it. In landscape the master navigation and record list is always visible. In short, the app needs a big navigational redesign that works equally well in portrait and landscape.
 - Session refresh. This is tricky because SFiPad uses both SOAP and REST, either one of which could expire at any time. When the session refreshes for one, it needs to be updated in the other. See [this issue](https://github.com/ForceDotComLabs/Salesforce-for-iPad/issues/2).
-- A very small number of users have repeatable crashes immediately after tapping 'Allow' in the OAuth dialog. I have yet to successfully reproduce this; crash report investigation is ongoing.
 
 Some other things to do:
 
