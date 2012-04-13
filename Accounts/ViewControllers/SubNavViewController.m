@@ -260,7 +260,7 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
         [bottomBar.layer addSublayer:shadowLayer];
         
         
-        UIImage *buttonImage = [UIImage imageNamed:@"gear.png"];
+        UIImage *buttonImage = [UIImage imageNamed:@"gear2.png"];
         
         UIButton *gearButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [gearButton setImage:buttonImage forState:UIControlStateNormal];
@@ -401,7 +401,13 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                 continue;
         }
         
-        if( i == ObjectListMyUpcomingEvents && ![sObjectType isEqualToString:@"Event"] )
+        if( ( i == ObjectListMyUpcomingEvents || i == ObjectListMyPastEvents ) && ![sObjectType isEqualToString:@"Event"] )
+            continue;
+        
+        if( i == ObjectListMyOpenCases && ![sObjectType isEqualToString:@"Case"] )
+            continue;
+        
+        if( i == ObjectListMyUpcomingOpportunities && ![sObjectType isEqualToString:@"Opportunity"] )
             continue;
         
         if( i == ObjectListMyUnreadLeads && ![sObjectType isEqualToString:@"Lead"] )
@@ -492,7 +498,10 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
     NSString *ordering = nil;
     
     if( orderingControl.selectedSegmentIndex <= 0 )
-        ordering = [NSString stringWithFormat:@"%@ asc", [[SFVAppCache sharedSFVAppCache] nameFieldForsObject:sObjectType]];
+        ordering = [NSString stringWithFormat:@"%@ asc", 
+                    ( [[NSArray arrayWithObjects:@"Lead", @"Contact", nil] containsObject:sObjectType]
+                      ? @"LastName"
+                      : [[SFVAppCache sharedSFVAppCache] nameFieldForsObject:sObjectType] )];
     else if( [[orderingControl titleForSegmentAtIndex:1] isEqualToString:NSLocalizedString(@"Created", @"Created")] &&
             orderingControl.selectedSegmentIndex == 1 )
         ordering = @"createddate desc";
@@ -516,7 +525,15 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                       [SFVUtil SOQLDatetimeFromDate:[NSDate date] isDateTime:NO],
                       [SFVUtil SOQLDatetimeFromDate:[NSDate date] isDateTime:YES]];
             break;
+        case ObjectListMyPastEvents:
+            where = [NSString stringWithFormat:@"ownerid='%@' and "
+                     "( activitydate <= %@ or activitydatetime <= %@ )",
+                     [[SFVUtil sharedSFVUtil] currentUserId],
+                     [SFVUtil SOQLDatetimeFromDate:[NSDate date] isDateTime:NO],
+                     [SFVUtil SOQLDatetimeFromDate:[NSDate date] isDateTime:YES]];
+            break;
         case ObjectListMyOpenTasks:
+        case ObjectListMyOpenCases:
             where = [NSString stringWithFormat:@"ownerid='%@' and isclosed=false",
                      [[SFVUtil sharedSFVUtil] currentUserId]];
             break;
@@ -535,6 +552,12 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
         case ObjectListRecordsIRecentlyModified:
             where = [NSString stringWithFormat:@"lastmodifiedbyid = '%@'", 
                      [[SFVUtil sharedSFVUtil] currentUserId]];
+            break;
+        case ObjectListMyUpcomingOpportunities:
+            where = [NSString stringWithFormat:@"ownerid='%@' and isclosed=false and closedate <= %@",
+                     [[SFVUtil sharedSFVUtil] currentUserId],
+                     [SFVUtil SOQLDatetimeFromDate:[NSDate dateWithTimeIntervalSinceNow:( 60 * 60 * 24 * 7 * 4 )]
+                                        isDateTime:NO]];
             break;
         default:
             break;
@@ -1136,6 +1159,8 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
     
     switch( subNavTableType ) {
         case SubNavAllObjects:
+            [self.searchResults removeAllObjects];
+            
             for( NSString *name in [self.myRecords allKeys] )
                 if( [[self.myRecords objectForKey:name] rangeOfString:searchText options:NSCaseInsensitiveSearch].location != NSNotFound )
                     [self.searchResults setObject:[self.myRecords objectForKey:name] forKey:name];
@@ -1170,9 +1195,7 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                                                         return;
                                                     
                                                     isSearchPending = NO;
-                                                    
-                                                    [searchBar resignFirstResponder];
-                                                    
+                                                                                                        
                                                     if( [self.pullRefreshTableViewController respondsToSelector:@selector(stopLoading)] )
                                                         [(PullRefreshTableViewController *)self.pullRefreshTableViewController stopLoading];
                                                 }
@@ -1186,7 +1209,6 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                                                     [(PullRefreshTableViewController *)self.pullRefreshTableViewController stopLoading];
                                                 
                                                 [self.searchResults removeAllObjects];
-                                                [searchBar resignFirstResponder];
                                                 
                                                 if( results && [results count] > 0 )
                                                     self.searchResults = [NSMutableDictionary dictionaryWithDictionary:
@@ -1860,7 +1882,10 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                                             cache:YES
                                      maxDimension:32
                                     completeBlock:^(UIImage *img, BOOL wasLoadedFromCache) {   
-                                        if( ![self isViewLoaded] )
+                                        if( ![self isViewLoaded] || ![self.rootViewController isLoggedIn] )
+                                            return;
+                                        
+                                        if( [tableView numberOfSections] < indexPath.section || [tableView numberOfRowsInSection:indexPath.section] < indexPath.row )
                                             return;
                                         
                                         if( !wasLoadedFromCache )
@@ -1951,6 +1976,7 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                 DTCustomColoredAccessory *accessory = [DTCustomColoredAccessory accessoryWithColor:cell.textLabel.textColor];
                 accessory.highlightedColor = [UIColor whiteColor];
                 cell.accessoryView = accessory;
+                cell.textLabel.numberOfLines = 2;
                 
                 if( indexPath.row < [[self listsForObject] count] )
                     switch( [((NSNumber *)[[self listsForObject] objectAtIndex:indexPath.row]) intValue] ) {
@@ -1995,8 +2021,17 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                         case ObjectListMyOpenTasks:
                             cell.textLabel.text = NSLocalizedString(@"My Open Tasks", @"My Open Tasks");
                             break;
+                        case ObjectListMyOpenCases:
+                            cell.textLabel.text = NSLocalizedString(@"My Open Cases", @"My Open Cases");
+                            break;
                         case ObjectListMyUpcomingEvents:
                             cell.textLabel.text = NSLocalizedString(@"My Upcoming Events", @"My Upcoming Events");
+                            break;
+                        case ObjectListMyPastEvents:
+                            cell.textLabel.text = NSLocalizedString(@"My Past Events", @"My Past Events");
+                            break;
+                        case ObjectListMyUpcomingOpportunities:
+                            cell.textLabel.text = NSLocalizedString(@"My Upcoming Open Opportunities", @"My Upcoming Open Opportunities");
                             break;
                         case ObjectListViewOnTheWeb:
                             cell.textLabel.text = NSLocalizedString(@"View on the Web", @"View on the Web");
@@ -2019,13 +2054,9 @@ static NSString *draggingCellIdentifier = @"DraggingCellIdentifier";
                     cell.detailTextLabel.text = [[SFVAppCache sharedSFVAppCache] descriptionValueForRecord:record];
                 else if( orderingControl.selectedSegmentIndex == 1 &&
                             [[orderingControl titleForSegmentAtIndex:1] isEqualToString:NSLocalizedString(@"Created", @"Created")] )
-                    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@: %@",
-                                                        NSLocalizedString(@"Created", @"Created"),
-                                                        [SFVUtil relativeTime:[SFVUtil dateFromSOQLDatetime:[record objectForKey:@"CreatedDate"]]]];
+                    cell.detailTextLabel.text = [SFVUtil relativeTime:[SFVUtil dateFromSOQLDatetime:[record objectForKey:@"CreatedDate"]]];
                 else
-                    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@: %@",
-                                                     NSLocalizedString(@"Modified", @"Modified"),
-                                                     [SFVUtil relativeTime:[SFVUtil dateFromSOQLDatetime:[record objectForKey:@"LastModifiedDate"]]]];                        
+                    cell.detailTextLabel.text = [SFVUtil relativeTime:[SFVUtil dateFromSOQLDatetime:[record objectForKey:@"LastModifiedDate"]]];                        
             } else
                 cell.detailTextLabel.text = [[SFVAppCache sharedSFVAppCache] descriptionValueForRecord:record];
             

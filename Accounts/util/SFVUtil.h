@@ -208,8 +208,6 @@ enum dateGroups {
 
 // image operations
 void addRoundedRectToPath(CGContextRef context, CGRect rect, float ovalWidth, float ovalHeight);
-+ (UIImage *) roundCornersOfImage:(UIImage *)source roundRadius:(int)roundRadius;
-+ (UIImage *) resizeImage:(UIImage *)image toSize:(CGSize) newSize;
 
 - (void) startNetworkAction;
 - (void) endNetworkAction;

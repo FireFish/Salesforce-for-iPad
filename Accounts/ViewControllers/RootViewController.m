@@ -294,7 +294,10 @@ static int const kExtraLoginOperations = 2;
 }
 
 - (void) hideLoadingModal {
-    [self.splitViewController dismissModalViewControllerAnimated:YES];
+    if( self.splitViewController.modalViewController
+        && [self.splitViewController.modalViewController isKindOfClass:[UINavigationController class]]
+        && [[((UINavigationController *)self.splitViewController.modalViewController) visibleViewController] isKindOfClass:[CloudyLoadingModal class]] )
+        [self.splitViewController dismissModalViewControllerAnimated:YES];
 }
 
 #pragma mark - Split view controller
@@ -548,7 +551,8 @@ static int const kExtraLoginOperations = 2;
     
     // REST - set up our coordinator
     SFOAuthCredentials *creds = [[SFOAuthCredentials alloc] initWithIdentifier:@"RESTLogin"
-                                                                      clientId:[OAuthViewController OAuthClientId]];
+                                                                      clientId:[OAuthViewController OAuthClientId]
+                                                                     encrypted:YES];
     creds.refreshToken = [SimpleKeychain load:refreshTokenKey];
     creds.instanceUrl = [NSURL URLWithString:[SimpleKeychain load:instanceURLKey]];  
     creds.accessToken = [[SFVUtil sharedSFVUtil] sessionId];
@@ -603,12 +607,20 @@ static int const kExtraLoginOperations = 2;
 // Delay completing the login until crucial metadata operations, namely describing Account
 // and its layout, are complete.
 - (void) appDidCompleteLoginMetadataOperation {
+    // if you've fast fingers on the cancel button...
+    if( ![self isLoggedIn] )
+        return;
+    
     completedLoginMetadataOperations++;
         
     if( completedLoginMetadataOperations < totalLoginMetadataOperations + kExtraLoginOperations )
         return;
     
     [self cancelPerformLogoutWithDelay];
+    
+    if( self.splitViewController.modalViewController 
+        && [self.splitViewController.modalViewController isKindOfClass:[UINavigationController class]] )
+        [((UINavigationController *)self.splitViewController.modalViewController).navigationBar.topItem setLeftBarButtonItem:nil animated:YES];
     
     NSLog(@"app did login async complete");
     
@@ -621,6 +633,9 @@ static int const kExtraLoginOperations = 2;
 
 - (void) doLogout {
     NSLog(@"app did logout");
+    
+    completedLoginMetadataOperations = 0;
+    totalLoginMetadataOperations = 0;
     
     [self cancelPerformLogoutWithDelay];
     [self hideLoginAnimated:NO];
@@ -689,9 +704,7 @@ static int const kExtraLoginOperations = 2;
                                               [NSString stringWithFormat:@"%@ (%@)", 
                                                [SFVUtil appFullName],
                                                [SFVUtil appVersion]]];
-    settingsViewController.title = [NSString stringWithFormat:@"%@ %@", 
-                                    [SFVUtil appFullName],
-                                    NSLocalizedString(@"Settings", @"Settings")];
+    settingsViewController.title = NSLocalizedString(@"Settings", @"Settings");
     
     settingsViewController.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:[self loginAction]
                                                                                                  style:UIBarButtonItemStyleBordered

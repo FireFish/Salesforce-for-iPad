@@ -44,7 +44,7 @@ static NSString *kLastSelectedIndexKey = @"LastSelectedRecentOrdering";
 
 - (id) initWithFrame:(CGRect)frame {
     if(( self = [super initWithFrame:frame] )) {
-        self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.png"]];
+        self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.gif"]];
 
         searching = NO;
         
@@ -105,7 +105,7 @@ static NSString *kLastSelectedIndexKey = @"LastSelectedRecentOrdering";
                                                    style:UITableViewStylePlain];
         recordTable.delegate = self;
         recordTable.dataSource = self;
-        recordTable.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.png"]];
+        recordTable.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.gif"]];
         recordTable.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         
         // Table Footer            
@@ -166,7 +166,7 @@ static NSString *kLastSelectedIndexKey = @"LastSelectedRecentOrdering";
     
     // label 2
     UILabel *l2 = [[UILabel alloc] initWithFrame:CGRectZero];
-    l2.text = NSLocalizedString(@"Records you view in Salesforce Viewer will appear here.", @"Records you view in SF Viewer will appear here.");
+    l2.text = NSLocalizedString(@"NORECENT_SUBTITLE", @"Records you view in SFiPad will appear here.");
     l2.font = [UIFont boldSystemFontOfSize:16];
     l2.textColor = [UIColor lightGrayColor];
     l2.textAlignment = UITextAlignmentCenter;
@@ -296,10 +296,12 @@ static NSString *kLastSelectedIndexKey = @"LastSelectedRecentOrdering";
     if( imgUrl )
         [[SFVUtil sharedSFVUtil] loadImageFromURL:imgUrl
                                             cache:YES
-                                     maxDimension:32
+                                     maxDimension:recordTable.rowHeight
                                     completeBlock:^(UIImage *img, BOOL wasLoadedFromCache) {
-                                        if( [self isViewLoaded] )
-                                            [self performQueryForObject:sObject];
+                                        if( ![self isViewLoaded] )
+                                            return;
+                                        
+                                        [self performQueryForObject:sObject];
                                     }];
     else
         [self performQueryForObject:sObject];

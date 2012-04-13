@@ -25,6 +25,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* Go buy yourself something nice.
+ _____________________________________________________________________
+ |.============[_F_E_D_E_R_A_L___R_E_S_E_R_V_E___N_O_T_E_]============.|
+ ||%&%&%&%_    _        _ _ _   _ _  _ _ _     _       _    _ %&%&%&%&||
+ ||%&%&%&/||_||_ | ||\||||_| \ (_ ||\||_(_  /\|_ |\|V||_|)|/ |\ \%&%&%||
+ ||&%.--.}|| ||_ \_/| ||||_|_/ ,_)|||||_,_) \/|  ||| ||_|\|\_||{.--.%&||
+ ||%/__ _\                ,-----,-'____'-,-----,               /__ _\ ||
+ ||||_ / \|              [    .-;"`___ `";-.    ]             ||_ / \|||
+ |||  \| || """""""""" 1  `).'.'.'`_ _'.  '.'.(` A 76355942 J |  \| ||||
+ |||,_/\_/|                //  / .'    '\    \\               |,_/\_/|||
+ ||%\    /   d8888b       //  | /   _  _ |    \\      .-"""-.  \    /%||
+ ||&%&--'   8P |) Y8     ||   //;   a \a \     ||    //A`Y A\\  '--'%&||
+ ||%&%&|    8b |) d8     ||   \\ '.   _> .|    ||    ||.-'-.||   |&%&%||
+ ||%&%&|     Y8888P      ||    `|  `-'_ ` |    ||    \\_/~\_//   |&%&%||
+ ||%%%%|                 ||     ;'.  ' ` /     ||     '-...-'    |%&%&||
+ ||%&%&|  A 76355942 J  /;\  _.-'. `-..'`>-._  /;\               |%&%&||
+ ||&%.--.              (,  ':     \; >-'`    ;` ,)              .--.%&||
+ ||%( 50 ) 1  """""""  _( \  ;...---""---...; / )_```"""""""1  ( 50 )%||
+ ||&%'--'============\`----------,----------------`/============'--'%&||
+ ||%&JGS&%&%&%&%&&%&%&) F I F T Y   D O L L A R S (%&%&%&%&%&%&&%&%&%&||
+ '"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""`
+ */
+
 #import "CloudyLoadingModal.h"
 #import "SFVUtil.h"
 
@@ -41,8 +64,9 @@
         
         activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         CGSize s = [activityIndicator sizeThatFits:CGSizeZero];
-        CGPoint origin = CGPointCenteredOriginPointForRects(self.view.frame, CGRectMake(0, 0, s.width, s.height));
-        [activityIndicator setFrame:CGRectMake( origin.x, origin.y, s.width, s.height )];
+        CGPoint origin = CGPointCenteredOriginPointForRects(self.view.frame, 
+                                                            CGRectMake(0, 0, s.width, s.height));
+        [activityIndicator setFrame:CGRectMake( origin.x, origin.y - 22, s.width, s.height )];
         
         loadingLabel = [[UILabel alloc] initWithFrame:CGRectMake( 0, CGRectGetMaxY(activityIndicator.frame) + 5, CGRectGetWidth(self.view.frame), 25)];
         loadingLabel.textColor = [UIColor whiteColor];
@@ -70,6 +94,7 @@
 - (void) randomizeLoadingLabel {
     NSArray *phrases = [NSArray arrayWithObjects:
                        @"Making it rain...",
+                       @"Reticulating splines...",
                        @"You look nice today.",
                        @"I'm on a horse.",
                        nil];

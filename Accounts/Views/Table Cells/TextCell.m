@@ -367,7 +367,7 @@ static CGFloat kCellHorizontalOffset = 5.0f;
                  : self.textView.frame );
         
     if( [SFVUtil isEmpty:self.textLabel.text] ) {
-        r.origin.x = 10;
+        r.origin.x = 15;
         r.size.width = CGRectGetWidth(self.frame) - r.origin.x - 10;
     } else {
         r.origin.x = CGRectGetMaxX(self.textLabel.frame) + 11;

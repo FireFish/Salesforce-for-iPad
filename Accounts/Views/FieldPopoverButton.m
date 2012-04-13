@@ -35,6 +35,8 @@
 #import "SFVAppCache.h"
 #import "SFVUtil.h"
 #import "SFVAsync.h"
+#import "UIImage+ImageUtils.h"
+#import <QuartzCore/QuartzCore.h>
 
 @implementation FieldPopoverButton
 
@@ -96,7 +98,7 @@ static NSString *openInMapsFormat = @"http://maps.google.com/maps?q=%@";
     if( self.fieldType == UserField || self.fieldType == UserPhotoField )
         requiredFields = [NSArray arrayWithObjects:@"Name", @"Email", @"FullPhotoUrl", nil];
     else if( self.fieldType == RelatedRecordField )
-        requiredFields = [NSArray arrayWithObject:[[SFVAppCache sharedSFVAppCache] nameFieldForsObject:[record objectForKey:kObjectTypeKey]]];
+        requiredFields = [NSArray arrayWithObject:[[SFVAppCache sharedSFVAppCache] nameFieldForsObject:[record valueForKeyPath:@"attributes.type"]]];
         
     if( record && requiredFields )
         for( NSString *field in requiredFields )
@@ -204,7 +206,7 @@ static NSString *openInMapsFormat = @"http://maps.google.com/maps?q=%@";
             wv.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             wv.scalesPageToFit = NO;
             wv.allowsInlineMediaPlayback = NO;
-            wv.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.png"]];
+            wv.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.gif"]];
             
             NSString *html =  [SFVUtil stringByAppendingSessionIdToImagesInHTMLString:
                                     [SFVUtil stringByDecodingEntities:[NSString stringWithFormat:@"<body style=\"margin: 0; padding: 5; max-width: 600px;\">%@</body>", self.buttonDetailText]]
@@ -414,18 +416,18 @@ static NSString *openInMapsFormat = @"http://maps.google.com/maps?q=%@";
         [[SFVUtil sharedSFVUtil] loadImageFromURL:[url stringByAppendingFormat:@"?oauth_token=%@",
                                                    [[[SFVUtil sharedSFVUtil] client] sessionId]]
                                             cache:YES
-                                     maxDimension:CGFLOAT_MAX
+                                     maxDimension:400 // 200 width
                                     completeBlock:^(UIImage *img, BOOL wasLoadedFromCache) {
-                                        if( !img || ![self.popoverController isPopoverVisible] )
+                                        if( !img || !self.popoverController )
                                             return;
-                                        
-                                        img = [SFVUtil roundCornersOfImage:img roundRadius:5];
-                                        
+                                                                                
                                         userPhotoView.alpha = 0.0;
                                         userPhotoView.image = img;
+                                        userPhotoView.layer.cornerRadius = 5.0f;
+                                        userPhotoView.layer.masksToBounds = YES;
                                         [userPhotoView setFrame:CGRectMake( 5, 10, img.size.width, img.size.height )];
                                         
-                                        [UIView animateWithDuration:( wasLoadedFromCache ? 0.0f : 0.5f )
+                                        [UIView animateWithDuration:( wasLoadedFromCache ? 0.2f : 0.5f )
                                                          animations:^(void) {
                                                              CGFloat maxX = 100, maxY = 100;
                                                              

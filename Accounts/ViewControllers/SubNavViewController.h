@@ -77,8 +77,11 @@ typedef enum SubNavTableType {
 typedef enum SubNavObjectListType {
     ObjectListRecentRecords = 0,
     ObjectListMyOpenTasks,
+    ObjectListMyOpenCases,
+    ObjectListMyUpcomingOpportunities,
     ObjectListMyUnreadLeads,
     ObjectListMyUpcomingEvents,
+    ObjectListMyPastEvents,
     ObjectListRecordsIOwn,
     ObjectListRecordsIFollow,
     ObjectListRecordsICreated,

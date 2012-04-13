@@ -43,7 +43,7 @@ static CGFloat const nudgeAmount = -3;
     if((self = [super init])) {               
         [self.view setFrame:frame];
         self.view.autoresizingMask = UIViewAutoresizingFlexibleHeight;
-        self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.png"]];
+        self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.gif"]];
         self.view.clipsToBounds = NO;
         
         self.account = [NSDictionary dictionary];
@@ -59,15 +59,14 @@ static CGFloat const nudgeAmount = -3;
         self.rightFWC = nil;
         self.leftFWC = nil;
                 
-        if( AT_LEAST_IOS(5) ) {
-            UIImage *resizeableImage = [[UIImage imageNamed:@"blue_header_bg.png"] resizableImageWithCapInsets:kBackgroundImageCapInsets];
-            [[UINavigationBar appearanceWhenContainedIn:[FlyingWindowController class], nil]
-                    setBackgroundImage:resizeableImage
-                         forBarMetrics:UIBarMetricsDefault];
-            [[UIToolbar appearanceWhenContainedIn:[UINavigationBar class], nil]
-             setBackgroundImage:resizeableImage forToolbarPosition:UIToolbarPositionTop barMetrics:UIBarMetricsDefault];
-        }
-        
+        // toolbar styling
+        UIImage *resizeableImage = [[UIImage imageNamed:@"blue_header_bg.png"] resizableImageWithCapInsets:kBackgroundImageCapInsets];
+        [[UINavigationBar appearanceWhenContainedIn:[FlyingWindowController class], nil]
+                setBackgroundImage:resizeableImage
+                     forBarMetrics:UIBarMetricsDefault];
+        [[UIToolbar appearanceWhenContainedIn:[UINavigationBar class], nil]
+         setBackgroundImage:resizeableImage forToolbarPosition:UIToolbarPositionTop barMetrics:UIBarMetricsDefault];
+                
         [self.view addSubview:self.navBar];
         
         CAGradientLayer *shadowLayer = [CAGradientLayer layer];

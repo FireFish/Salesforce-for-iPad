@@ -32,6 +32,7 @@
 #import "RootViewController.h"
 #import "SFVAsync.h"
 #import "NSData+Base64.h"
+#import "UIImage+ImageUtils.h"
 
 @implementation SFVAppCache
 
@@ -310,6 +311,13 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(SFVAppCache);
     return NO;
 }
 
+- (BOOL)isMultiCurrencyEnabled {
+    if( !globalDescribeCache )
+        return NO;
+    
+    return [[self allGlobalSObjects] containsObject:@"CurrencyType"];
+}
+
 - (BOOL)doesGlobalObject:(NSString *)object haveProperty:(GlobalDescribeBooleanProperty)property {
     if( !globalDescribeCache )
         return NO;
@@ -428,7 +436,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(SFVAppCache);
         
     UIImage *img = [UIImage imageNamed:[NSString stringWithFormat:format, sObject]];
     
-    return ( img ? img : defaultImage );
+    return [( img ? img : defaultImage ) imageAtScale];
 }
 
 #pragma mark - describing individual objects
@@ -751,6 +759,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(SFVAppCache);
     
     if( [self doesObject:sObject haveProperty:ObjectIsRecordTypeEnabled] )
         [fields addObject:kRecordTypeIdField];
+    
+    // Users, Leads and Contacts have firstname/lastname
+    if( [[NSArray arrayWithObjects:@"Lead", @"Contact", @"User", nil] containsObject:sObject] )
+        [fields addObjectsFromArray:[NSArray arrayWithObjects:@"FirstName", @"LastName", nil]];
     
     if( [sObject isEqualToString:@"Account"] && [self isPersonAccountEnabled] )
         [fields addObjectsFromArray:[NSArray arrayWithObjects:@"PersonContactId", @"IsPersonAccount", nil]];

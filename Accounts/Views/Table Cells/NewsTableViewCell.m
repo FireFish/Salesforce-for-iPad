@@ -32,6 +32,7 @@
 #import "SFVUtil.h"
 #import "RecordNewsViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import "UIImage+ImageUtils.h"
 
 @implementation NewsTableViewCell
 
@@ -91,25 +92,18 @@
     }
         
     CGSize size = image.size, maxSize = [recordNewsViewController maxImageSize];
-        
-    // scale it down if the image is too large
-    if( size.height > maxSize.height ) {
-        double d = maxSize.height / size.height;
-        
-        size.height = maxSize.height;
-        size.width *= d;
-        
-        image = [SFVUtil resizeImage:image toSize:size];
+    
+    float imgMaxDim = MAX( size.width, size.height ), targetMaxDim = MAX( maxSize.width, maxSize.height );
+    float scale = 1.0;
+    CGSize targetSize = CGSizeZero;
+    
+    if( imgMaxDim > targetMaxDim ) {
+        scale = targetMaxDim / imgMaxDim;
+        targetSize = CGSizeMake( scale * size.width, scale * size.height );
     }
     
-    if( size.width > maxSize.width ) {
-        double d = maxSize.width / size.width;
-        
-        size.width = maxSize.width;
-        size.height *= d;
-        
-        image = [SFVUtil resizeImage:image toSize:size];
-    }
+    if( !CGSizeEqualToSize( targetSize, CGSizeZero ) )
+        image = [image imageResizedToSize:targetSize];
     
     [articleImageView setImage:image];
     articleImageView.hidden = NO;

@@ -115,21 +115,21 @@
         
         self.actionButton.enabled = ![[[[self.webView request] URL] absoluteString] isEqualToString:@"about:blank"];
         
-        /*UIBarButtonItem *expandButton = nil;
+        UIBarButtonItem *expandButton = nil;
         
         if( !self.isFullScreen )
-            expandButton = [[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"zoomin.png"] 
-                                                                         style:UIBarButtonItemStylePlain
-                                                                        target:self
-                                                                        action:@selector(toggleFullScreen)] autorelease];
-        else
-            expandButton = [[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"zoomout.png"] 
+            expandButton = [[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"zoom.png"] 
                                                              style:UIBarButtonItemStylePlain
                                                             target:self
-                                                            action:@selector(toggleFullScreen)] autorelease];*/
+                                                            action:@selector(toggleFullScreen:)] autorelease];
+        else
+            expandButton = [[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"zoom.png"] 
+                                                             style:UIBarButtonItemStylePlain
+                                                            target:self
+                                                            action:@selector(toggleFullScreen:)] autorelease];
             
         
-        buttons = [NSArray arrayWithObjects:spacer, actionButton, nil]; //spacer, expandButton, nil];
+        buttons = [NSArray arrayWithObjects:spacer, actionButton, spacer, expandButton, nil];
     } else {
         // left side toolbar
         UIBarButtonItem *back = [[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back.png"] 
@@ -168,7 +168,8 @@
     return [toolbar autorelease];
 }
 
-- (IBAction) toggleFullScreen {
+- (IBAction) toggleFullScreen:(id)sender {
+        
     if( !self.isFullScreen ) {  
         WebViewController *wvc = [[WebViewController alloc] initWithFrame:self.view.frame];
         wvc.isFullScreen = YES;
@@ -176,13 +177,26 @@
         wvc.flyingWindowType = self.flyingWindowType;
         wvc.detailViewController = self.detailViewController;
         wvc.rootViewController = self.rootViewController;
+        wvc.account = [self.detailViewController mostRecentlySelectedRecord];
         
-        [wvc loadURL:[[[self.webView request] URL] absoluteString]];
+        [wvc loadURL:[[[self.webView request] URL] absoluteString]];    
         
-        [self.rootViewController.splitViewController presentModalViewController:wvc animated:YES];
+        [self.detailViewController clearFlyingWindows];
+        
+        [self.rootViewController.splitViewController presentViewController:wvc
+                                                                  animated:YES
+                                                                completion:nil];
         [wvc release];
-    } else
-        [self.rootViewController.splitViewController dismissModalViewControllerAnimated:YES];
+    } else         
+        [self.rootViewController.splitViewController dismissViewControllerAnimated:NO
+                                                                        completion:^{
+                                                                            if( [self.detailViewController numberOfFlyingWindows] == 0 ) {
+                                                                                if( self.account )
+                                                                                    [self.detailViewController didSelectAccount:[[self.account copy] autorelease]];
+                                                                                else
+                                                                                    [self.detailViewController addFlyingWindow:FlyingWindowRecentRecords withArg:nil];
+                                                                            }
+                                                                        }];
 }
 
 - (void) resetNavToolbar {
@@ -299,14 +313,8 @@
             return [[SFVAppCache sharedSFVAppCache] isChatterEnabled];
         case ButtonMailLink:
             return [MFMailComposeViewController canSendMail];
-        case ButtonTweet: {
-            Class twitterClass = NSClassFromString(@"TWTweetComposeViewController"); 
-            
-            if( twitterClass )
-                return [TWTweetComposeViewController canSendTweet];
-            
-            return NO;
-        }
+        case ButtonTweet:
+            return[TWTweetComposeViewController canSendTweet];
         default:
             return YES;
     }

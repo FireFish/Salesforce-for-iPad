@@ -58,6 +58,7 @@
 #import "MGSplitViewController.h"
 #import "PRPConnection.h"
 #import "SFVAppCache.h"
+#import "OAuthViewController.h"
 
 @implementation SFVAppDelegate
 
@@ -111,6 +112,12 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     NSLog(@"app did become active");
+    
+    // If we are displaying our OAuth window, refresh it.
+    if( self.splitViewController.modalViewController 
+        && [self.splitViewController.modalViewController isKindOfClass:[UINavigationController class]]
+        && [[((UINavigationController *)self.splitViewController.modalViewController) visibleViewController] isKindOfClass:[OAuthViewController class]] )
+        [((OAuthViewController *)[((UINavigationController *)self.splitViewController.modalViewController) visibleViewController]) reloadWebView];
     
     /*
      Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.

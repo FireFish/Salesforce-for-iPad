@@ -72,7 +72,7 @@
         recordTable.dataSource = self;
         recordTable.delegate = self;
         recordTable.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        recordTable.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.png"]];
+        recordTable.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.gif"]];
         
         // Table Footer            
         UIImage *i = [UIImage imageNamed:@"tilde.png"];
@@ -982,7 +982,7 @@
 - (BOOL)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker 
       shouldContinueAfterSelectingPerson:(ABRecordRef)person {
     NSMutableArray *indexesToReload = [NSMutableArray array];
-    
+        
     NSDictionary *stringProperties = [NSDictionary dictionaryWithObjectsAndKeys:
                                       @"FirstName", [NSNumber numberWithInt:kABPersonFirstNameProperty],
                                       @"LastName", [NSNumber numberWithInt:kABPersonLastNameProperty],
@@ -994,7 +994,7 @@
         NSString *field = [stringProperties objectForKey:property];
         NSString *prop = (NSString *)ABRecordCopyValue(person, [property intValue]);
         
-        if( ![fieldsToIndexPaths objectForKey:field] || !prop ) {
+        if( ![fieldsToIndexPaths objectForKey:field] || !prop || [prop length] == 0 ) {
             [prop release];
             continue;
         }
@@ -1060,9 +1060,13 @@
     
     [popoverController dismissPopoverAnimated:YES];
     
+    // Mark all these fields dirty
+    for( NSIndexPath *path in indexesToReload )
+        [self setDirtyFieldAtIndexPath:path];
+    
     [recordTable reloadRowsAtIndexPaths:indexesToReload
                        withRowAnimation:UITableViewRowAnimationFade];
-    
+        
     return NO;
 }
 
@@ -1389,9 +1393,12 @@
                                              isDateTime:[[fieldArray objectAtIndex:FieldComponentType] isEqualToString:@"datetime"]]
                    forKey:[fieldArray objectAtIndex:FieldComponentName]];
         
-        [(TextCell *)[recordTable cellForRowAtIndexPath:indexPath] 
-         setCellText:[[SFVUtil sharedSFVUtil] textValueForField:[fieldArray objectAtIndex:FieldComponentName]
-                                                 withDictionary:record]];
+        [recordTable reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
+                           withRowAnimation:UITableViewRowAnimationNone];
+        
+        [recordTable selectRowAtIndexPath:indexPath
+                                 animated:NO
+                           scrollPosition:UITableViewScrollPositionNone];
         
     }
     
@@ -1710,10 +1717,11 @@
         else
             [datePicker setDatePickerMode:UIDatePickerModeDateAndTime];
         
-        if( [SFVUtil isEmpty:[record objectForKey:fieldName]] )
+        if( [SFVUtil isEmpty:[record objectForKey:fieldName]] ) {
             [self selectedFieldValueChanged:datePicker];
         
-        fieldArray = [self fieldArrayAtIndexPath:indexPath];
+            fieldArray = [self fieldArrayAtIndexPath:indexPath];
+        }
                 
         UIViewController *vc = [[UIViewController alloc] init];
         vc.view = datePicker;
@@ -1746,7 +1754,11 @@
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         
         for( NSString *ob in refTo )
-            [dict setObject:@"" forKey:ob];
+            [dict setObject:( [ob isEqualToString:@"User"] 
+                               ? [NSString stringWithFormat:@"%@ where isactive=true order by lastname asc limit 5",
+                                    [[[SFVAppCache sharedSFVAppCache] shortFieldListForObject:ob] componentsJoinedByString:@","]]
+                               : @"" )
+                     forKey:ob];
         
         ObjectLookupController *olc = [[ObjectLookupController alloc] initWithSearchScope:dict];
         olc.delegate = self;

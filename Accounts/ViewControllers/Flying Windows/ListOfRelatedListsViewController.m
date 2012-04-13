@@ -60,7 +60,7 @@ int totalRelationshipQueriesExecuted;
                                                        style:UITableViewStylePlain] autorelease];
         self.tableView.delegate = self;
         self.tableView.dataSource = self;
-        self.tableView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.png"]];
+        self.tableView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.gif"]];
         self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
         // Table Footer            
@@ -256,7 +256,7 @@ int totalRelationshipQueriesExecuted;
     if( imgUrl )
         [[SFVUtil sharedSFVUtil] loadImageFromURL:imgUrl
                                             cache:YES
-                                     maxDimension:32
+                                     maxDimension:tv.rowHeight
                                     completeBlock:^(UIImage *img, BOOL wasLoadedFromCache) {
                                         if( ![self isViewLoaded] )
                                             return;

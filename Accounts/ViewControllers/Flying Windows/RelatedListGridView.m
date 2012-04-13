@@ -62,7 +62,7 @@ BOOL canSortGridColumns = NO;
         self.gridView.scrollEnabled = YES;
         self.gridView.resizesCellWidthToFit = NO;
         //self.gridView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight;
-        self.gridView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.png"]];
+        self.gridView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"panelBG.gif"]];
         
         [self.view addSubview:self.gridView];
                 
@@ -223,6 +223,12 @@ BOOL canSortGridColumns = NO;
                                                                    [self.account objectForKey:@"Id"], @"Id",
                                                                    nil];
                                        
+                                       // Dictionary for this user
+                                       NSDictionary *thisUser = [NSDictionary dictionaryWithObjectsAndKeys:
+                                                                 [[SFVUtil sharedSFVUtil] currentUserName], @"Name",
+                                                                 [[SFVUtil sharedSFVUtil] currentUserId], @"Id",
+                                                                 nil];
+                                       
                                        UIToolbar *rightToolbar = [[UIToolbar alloc] initWithFrame:CGRectZero];                                       
                                        rightToolbar.tintColor = self.navBar.tintColor;
                                        rightToolbar.opaque = YES;
@@ -244,6 +250,8 @@ BOOL canSortGridColumns = NO;
                                            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
                                                                  [self.account objectForKey:@"Id"], [relatedField stringByAppendingString:@"Id"],
                                                                  thisRecord, relatedField,
+                                                                 thisUser, @"Owner",
+                                                                 [[SFVUtil sharedSFVUtil] currentUserId], @"OwnerId",
                                                                  nil];
                                            
                                            CreateRecordButton *button = [CreateRecordButton buttonForObject:@"Task"
@@ -276,6 +284,8 @@ BOOL canSortGridColumns = NO;
                                            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
                                                                  [self.account objectForKey:@"Id"], [relatedField stringByAppendingString:@"Id"],
                                                                  thisRecord, relatedField,
+                                                                 thisUser, @"Owner",
+                                                                 [[SFVUtil sharedSFVUtil] currentUserId], @"OwnerId",
                                                                  nil];
                                            CreateRecordButton *button = [CreateRecordButton buttonForObject:@"Task"
                                                                                                        text:NSLocalizedString(@"Log a Call", @"Log a Call")
@@ -597,6 +607,14 @@ BOOL canSortGridColumns = NO;
         
         if( [colName isEqualToString:@"Milestone.MilestoneType.Name"] ) {
             [fields addObject:@"MilestoneType.Name"];
+            continue;
+        }
+        
+        if( [[[SFVAppCache sharedSFVAppCache] field:colName
+                                          onObject:[self.relatedList sobject]
+                                    stringProperty:FieldType] isEqualToString:@"currency"]
+            && [[SFVAppCache sharedSFVAppCache] isMultiCurrencyEnabled] ) {
+            [fields addObject:[NSString stringWithFormat:@"convertCurrency(%@)", colName]];
             continue;
         }
                 

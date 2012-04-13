@@ -39,7 +39,9 @@
         
         self.tableView.allowsSelectionDuringEditing = YES;
         
-        self.tableView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"paperbg.jpeg"]];
+        self.tableView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"paperbg.png"]];
+        self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"paperbg.png"]];
+        self.tableView.separatorColor = [UIColor darkGrayColor];
     }
     
     [self reloadAndResize];
@@ -116,7 +118,7 @@
             break;
     }
     
-    return ( [SFVUtil isEmpty:host] ? kProdLoginURL : host );
+    return [( [SFVUtil isEmpty:host] ? kProdLoginURL : host ) lowercaseString];
 }
 
 + (NSString *) nameForCurrentLoginHost { 

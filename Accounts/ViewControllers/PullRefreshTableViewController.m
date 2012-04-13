@@ -33,6 +33,7 @@
 #import "PullRefreshTableViewController.h"
 #import "SFVUtil.h"
 #import "SFVAppDelegate.h"
+#import "UIImage+ImageUtils.h"
 
 #define REFRESH_HEADER_HEIGHT 52.0f
 #define PULLTEXT NSLocalizedString(@"Pull down to Refresh", @"Pull to refresh")
@@ -80,10 +81,12 @@
         [bgImage release];*/
     }
     
-    refreshArrow = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"arrow_white.png"]];
+    UIImage *arrowImage = [[UIImage imageNamed:@"arrow_white.png"] imageAtScale];
+    
+    refreshArrow = [[UIImageView alloc] initWithImage:arrowImage];
     refreshArrow.frame = CGRectMake( curX,
                                     (REFRESH_HEADER_HEIGHT - 25) / 2,
-                                    28, 32);
+                                    arrowImage.size.width, arrowImage.size.height);
     
     refreshSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     refreshSpinner.frame = CGRectMake( curX, (REFRESH_HEADER_HEIGHT - 20) / 2, 20, 20);

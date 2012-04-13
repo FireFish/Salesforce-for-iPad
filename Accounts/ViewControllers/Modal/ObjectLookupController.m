@@ -53,6 +53,7 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
         onlyShowChatterEnabledObjects = NO;
         objectsChecked = objectsToCheck = 0;
         searchScope = [[NSMutableDictionary alloc] init];
+        searchResults = [[NSMutableDictionary alloc] init];
                 
         // searchscope
         if( [scope count] > 0 ) {
@@ -151,6 +152,8 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
         searchBar.placeholder = NSLocalizedString(@"ALLFEEDRECORDS", @"All feed-enabled Records");
     else        
         searchBar.placeholder = NSLocalizedString(@"ALLRECORDS", @"All Records");
+    
+    [self loadRecentRecordsFromMetadata];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -233,9 +236,12 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
         [[SFVUtil sharedSFVUtil] loadImageFromURL:[SFVUtil stringByAppendingSessionIdToURLString:imgURL
                                                                                        sessionId:[[SFVUtil sharedSFVUtil] sessionId]]
                                             cache:YES
-                                     maxDimension:44
+                                     maxDimension:resultTable.rowHeight
                                     completeBlock:^(UIImage *img, BOOL wasLoadedFromCache) {
                                         if( ![self isViewLoaded] )
+                                            return;
+                                        
+                                        if( [tableView numberOfSections] < indexPath.section || [tableView numberOfRowsInSection:indexPath.section] < indexPath.row )
                                             return;
                                         
                                         if( !wasLoadedFromCache )
@@ -252,7 +258,7 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
         return cell;
     
     NSDictionary *result = [sectionRecords objectAtIndex:indexPath.row];
-    NSString *type = [[SFVAppCache sharedSFVAppCache] sObjectFromRecordId:[result objectForKey:@"Id"]];
+    NSString *type = [result objectForKey:kObjectTypeKey];
     
     cell.textLabel.text = [[SFVAppCache sharedSFVAppCache] nameForSObject:result];
     cell.textLabel.textColor = [UIColor lightGrayColor];
@@ -301,6 +307,29 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
     
     if( [self.delegate respondsToSelector:@selector(objectLookupDidSelectRecord:record:)] )
         [self.delegate objectLookupDidSelectRecord:self record:result];
+}
+
+#pragma mark - metadata describes for default results
+
+- (void)loadRecentRecordsFromMetadata {
+    if( !searchScope || [searchScope count] == 0 )
+        return;
+
+    objectsToCheck = 1;
+        
+    [[SFRestAPI sharedInstance] performMetadataWithObjectType:[[searchScope allKeys] objectAtIndex:0]
+                                                    failBlock:^(NSError *e) {
+                                                        
+                                                    }
+                                                completeBlock:^(NSDictionary *dict) {
+                                                    if( !dict || ![self isViewLoaded] || searching )
+                                                        return;
+                                                    
+                                                    NSArray *bits = [dict objectForKey:@"recentItems"];
+                                                    
+                                                    if( bits && [bits count] > 0 )
+                                                        [self receivedObjectResponse:[dict objectForKey:@"recentItems"]];
+                                                }];
 }
 
 #pragma mark - search bar delegate
@@ -386,7 +415,7 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
         return;
     
     records = [SFVAsync ZKSObjectArrayToDictionaryArray:records];    
-    NSString *type = [[SFVAppCache sharedSFVAppCache] sObjectFromRecordId:[[records objectAtIndex:0] objectForKey:@"Id"]];
+    NSString *type = [[records objectAtIndex:0] objectForKey:kObjectTypeKey];
         
     if( [SFVUtil isEmpty:type] )
         return;
@@ -537,8 +566,6 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
     
     if( searchResults )
         [searchResults removeAllObjects];
-    else
-        searchResults = [[NSMutableDictionary alloc] init];
     
     [resultTable reloadData];    
     
@@ -662,8 +689,7 @@ static NSString *kSOQLSearchScope = @"SOQLOnly";
                                                                
                                                                NSString *sosl = [SFVAsync SOSLQueryWithSearchTerm:text
                                                                                                        fieldScope:nil
-                                                                                                      objectScope:[NSDictionary dictionaryWithObject:
-                                                                                                                   [[self class] searchScopeForObject:[[soslScopes allKeys] objectAtIndex:0]]
+                                                                                                      objectScope:[NSDictionary dictionaryWithObject:[[soslScopes allValues] objectAtIndex:0]
                                                                                                                                               forKey:[[soslScopes allKeys] objectAtIndex:0]]];
                                                                
                                                                [[SFRestAPI sharedInstance] performSOSLSearch:sosl

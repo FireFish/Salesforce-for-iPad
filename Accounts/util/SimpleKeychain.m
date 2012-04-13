@@ -21,11 +21,16 @@
     NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
     SecItemDelete((CFDictionaryRef)keychainQuery);  
     
+    NSData *bits = nil;
+    
+    if( [data isKindOfClass:[NSString class]] )
+        @try {
+            bits = [SFCrypto crypt:[data dataUsingEncoding:NSUTF8StringEncoding]
+                         operation:kCryptEncrypt];
+        } @catch( NSException *e ) {}
+    
     [keychainQuery setObject:[NSKeyedArchiver archivedDataWithRootObject:
-                              (  [data isKindOfClass:[NSString class]] 
-                                 ? [SFCrypto crypt:[data dataUsingEncoding:NSUTF8StringEncoding]
-                                         operation:kCryptEncrypt]
-                                 : data )]
+                              ( bits ? bits : data )]
                       forKey:(id)kSecValueData];
     
     SecItemAdd((CFDictionaryRef)keychainQuery, NULL);
@@ -48,10 +53,19 @@
     }
     if (keyData) CFRelease(keyData);
     
-    if( [ret isKindOfClass:[NSData class]] )
-        return [[[NSString alloc] initWithData:[SFCrypto crypt:ret
-                                                     operation:kCryptDecrypt]
-                                      encoding:NSUTF8StringEncoding] autorelease];
+    if( ret && [ret isKindOfClass:[NSData class]] ) {
+        NSString *str = nil;
+        
+        @try {
+            str = [[[NSString alloc] initWithData:[SFCrypto crypt:ret
+                                                        operation:kCryptDecrypt]
+                                         encoding:NSUTF8StringEncoding] autorelease];
+            
+            return str;
+        } @catch( NSException *e ) {}
+        
+        return nil;
+    }
     
     return ret;
 }

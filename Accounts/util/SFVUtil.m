@@ -40,6 +40,7 @@
 #import "SFVAppCache.h"
 #import <objc/runtime.h>
 #import "NSData+Base64.h"
+#import "UIImage+ImageUtils.h"
 
 @implementation SFVUtil
 
@@ -52,7 +53,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(SFVUtil);
 static int const kMaxRecentRecords = 250;
 
 // Size of a userphoto for field layouts
-static CGFloat kUserPhotoSize = 24.0f;
+static CGFloat const kUserPhotoSize = 26.0f;
 
 // Character used to save completion blocks in an array on each image load request
 static char imageLoadCompleteBlockArray;
@@ -124,7 +125,7 @@ BOOL chatterEnabled = NO;
     id cached = [userPhotoCache objectForKey:photoURL];
     
     if( cached && [cached isKindOfClass:[UIImage class]] )
-        return (UIImage *)cached;
+        return [(UIImage *)cached imageAtScale];
     
     return nil;
 }
@@ -297,14 +298,13 @@ BOOL chatterEnabled = NO;
                              [[SFVUtil sharedSFVUtil] loadImageFromURL:imageURL
                                                                  cache:YES
                                                           maxDimension:kUserPhotoSize
-                                                         completeBlock:^(UIImage *img, BOOL wasLoadedFromCache) {
-                                                             // Add the imageview to our view
-                                                             img = [SFVUtil roundCornersOfImage:img roundRadius:5];
-                                                             
+                                                         completeBlock:^(UIImage *img, BOOL wasLoadedFromCache) {          
                                                              UIImageView *photoView = [[UIImageView alloc] initWithImage:img];
                                                              [photoView setFrame:CGRectMake( CGRectGetMaxX(fieldLabel.frame) + 10, 
                                                                                      0 + ( img.size.height > 22 ? -2 : 2 ), 
                                                                                      img.size.width, img.size.height)];
+                                                             photoView.layer.cornerRadius = 5.0f;
+                                                             photoView.layer.masksToBounds = YES;
                                                              
                                                              [fieldView addSubview:photoView];
                                                              [photoView release];
@@ -351,7 +351,7 @@ BOOL chatterEnabled = NO;
     if( fieldImage ) {
         // Add the imageview to our view
         UIImageView *photoView = [[UIImageView alloc] initWithImage:fieldImage];
-        [photoView setFrame:CGRectMake(fieldValue.frame.origin.x, fieldValue.frame.origin.y + ( fieldImage.size.height > 22 ? -2 : 2 ), fieldImage.size.width, fieldImage.size.height)];
+        [photoView setFrame:CGRectMake(fieldValue.frame.origin.x, fieldValue.frame.origin.y - 1, fieldImage.size.width, fieldImage.size.height)];
         
         [fieldView addSubview:photoView];
         
@@ -1140,6 +1140,9 @@ BOOL chatterEnabled = NO;
                                                     kRecordTypeIdField]];
                             }
                         }
+                    } else if( [fieldType isEqualToString:@"currency"] && [[SFVAppCache sharedSFVAppCache] isMultiCurrencyEnabled] ) {
+                        [ret addObject:[NSString stringWithFormat:@"convertCurrency(%@)", fname]];                        
+                        continue;
                     }
                     
                     [ret addObject:fname];
@@ -1337,10 +1340,16 @@ BOOL chatterEnabled = NO;
     for( id ob in results ) {
         NSDictionary *accountDict = [SFVAsync ZKSObjectToDictionary:ob];
         
-        name = [[SFVAppCache sharedSFVAppCache] nameForSObject:accountDict];
+        // Leads, Contacts always use lastname
+        if( [[NSArray arrayWithObjects:@"Lead", @"Contact", nil] containsObject:[accountDict objectForKey:kObjectTypeKey]] )
+            name = [accountDict objectForKey:@"LastName"];
+        else
+            name = [[SFVAppCache sharedSFVAppCache] nameForSObject:accountDict];
         
         // first char of this account's name
-        NSString *index = [[name substringToIndex:1] uppercaseString];
+        NSString *index = ( name && [name length] > 0 
+                            ? [[name substringToIndex:1] uppercaseString]
+                            : @"#" );
         
         if( ![[NSCharacterSet letterCharacterSet] characterIsMember:[index characterAtIndex:0]] )
             index = @"#";
@@ -1370,7 +1379,11 @@ BOOL chatterEnabled = NO;
         NSDictionary *newAccount = [SFVAsync ZKSObjectToDictionary:a];
         NSString *name = nil;
         
-        name = [[SFVAppCache sharedSFVAppCache] nameForSObject:newAccount];
+        // Leads, Contacts always use lastname
+        if( [[NSArray arrayWithObjects:@"Lead", @"Contact", nil] containsObject:[newAccount objectForKey:kObjectTypeKey]] )
+            name = [newAccount objectForKey:@"LastName"];
+        else
+            name = [[SFVAppCache sharedSFVAppCache] nameForSObject:newAccount];
         
         if( [SFVUtil isEmpty:name] )
             continue;
@@ -1496,17 +1509,6 @@ BOOL chatterEnabled = NO;
     } while( [names count] < size );              
     
     return [names allObjects];
-}
-
-+ (UIImage *)resizeImage:(UIImage *)image toSize:(CGSize)newSize {
-    // resize image
-    UIGraphicsBeginImageContext( newSize );
-    [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];
-    
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return newImage;
 }
 
 + (NSString *) SOQLDatetimeFromDate:(NSDate *)date isDateTime:(BOOL)isDateTime {
@@ -1653,31 +1655,6 @@ void addRoundedRectToPath(CGContextRef context, CGRect rect, float ovalWidth, fl
 	CGContextAddArcToPoint(context, fw, 0, fw, fh/2, 1);
 	CGContextClosePath(context);
 	CGContextRestoreGState(context);
-}
-
-+ (UIImage *)roundCornersOfImage:(UIImage *)source roundRadius:(int)roundRadius {
-	int w = source.size.width;
-	int h = source.size.height;
-	
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef context = CGBitmapContextCreate(NULL, w, h, 8, 4 * w, colorSpace, kCGImageAlphaPremultipliedFirst);
-	
-	CGContextBeginPath(context);
-	CGRect rect = CGRectMake(0, 0, w, h);
-	addRoundedRectToPath(context, rect, roundRadius, roundRadius);
-	CGContextClosePath(context);
-	CGContextClip(context);
-	
-	CGContextDrawImage(context, CGRectMake(0, 0, w, h), source.CGImage);
-	
-	CGImageRef imageMasked = CGBitmapContextCreateImage(context);
-	CGContextRelease(context);
-	CGColorSpaceRelease(colorSpace);
-	
-	UIImage *img = [UIImage imageWithCGImage:imageMasked];   
-    CGImageRelease(imageMasked);
-    
-    return img;
 }
 
 + (NSString *) stripHTMLTags:(NSString *)str {
@@ -1964,11 +1941,11 @@ finish:
         return;
     
     id cached = [userPhotoCache objectForKey:url];
-    
+        
     if( cached ) {
         if( [cached isKindOfClass:[UIImage class]] ) {
             //NSLog(@"IMG FROM CACHE: %@", url );
-            UIImage *img = (UIImage *)cached;
+            UIImage *img = [(UIImage *)cached imageAtScale];
             
             if( maxDimension > 0 ) {
                 float imgMaxDim = MAX( img.size.width, img.size.height );
@@ -1981,7 +1958,7 @@ finish:
                 }
                 
                 if( !CGSizeEqualToSize( targetSize, CGSizeZero ) )
-                    img = [[self class] resizeImage:img toSize:targetSize];
+                    img = [img imageResizedToSize:targetSize];
             }
             
             if( completeBlock )
@@ -2023,7 +2000,7 @@ finish:
             return;
         }
         
-        UIImage *img = [UIImage imageWithData:[connection downloadData]];
+        UIImage *img = [[UIImage imageWithData:[connection downloadData]] imageAtScale];
         
         // Remove the blocks stored on this request
         objc_setAssociatedObject( connection, &imageLoadCompleteBlockArray, nil, OBJC_ASSOCIATION_ASSIGN);
@@ -2044,9 +2021,9 @@ finish:
                 scale = maxDimension / imgMaxDim;
                 targetSize = CGSizeMake( scale * img.size.width, scale * img.size.height );
             }
-            
+                        
             if( !CGSizeEqualToSize( targetSize, CGSizeZero ) )
-                img = [[self class] resizeImage:img toSize:targetSize];
+                img = [img imageResizedToSize:targetSize];
         }
         
         // Fire all completion blocks for this image

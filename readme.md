@@ -23,6 +23,12 @@ In this document:
 
 Salesforce for iPad was originally released as 'Account Viewer' in August 2011. Account Viewer is [available on GitHub](https://github.com/ForceDotComLabs/Account-Viewer). In November 2011, Account Viewer was updated and re-released as 'Salesforce Viewer'. In February 2012, I updated it again to Salesforce for iPad.
 
+v2.3 - Released 4/5/2012
+
+- Now requires iOS 5. 
+- Retina-fied for the new iPad 
+- Many UI updates, bug fixes
+
 v2.2.3 - Released 3/13/2012
 
 - Added an escape hatch to the login screen

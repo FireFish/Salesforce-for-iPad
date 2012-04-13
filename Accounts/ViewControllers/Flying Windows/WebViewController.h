@@ -33,6 +33,7 @@
 
 @interface WebViewController : FlyingWindowController <UIActionSheetDelegate, MFMailComposeViewControllerDelegate, UIWebViewDelegate, UIPopoverControllerDelegate, ChatterPostDelegate> {
     int webviewLoads;
+    UIWindow *tmpWindow;
 }
 
 typedef enum WebViewActionButtons {
@@ -57,7 +58,7 @@ typedef enum WebViewActionButtons {
 - (id) initWithFrame:(CGRect)frame;
 - (void) loadURL:(NSString *)url;
 - (UIToolbar *) toolBarForSide:(BOOL)isLeftSide;
-- (IBAction) toggleFullScreen;
+- (IBAction) toggleFullScreen:(id)sender;
 - (void) resetNavToolbar;
 
 - (BOOL) isFullScreen;

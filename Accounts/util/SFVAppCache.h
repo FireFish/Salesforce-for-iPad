@@ -167,6 +167,7 @@ typedef enum FieldDescribeNumberProperties {
 
 // global describe sObjects
 
+- (BOOL) isMultiCurrencyEnabled;
 - (BOOL) isChatterEnabled;
 - (BOOL) doesGlobalObject:(NSString *)object haveProperty:(GlobalDescribeBooleanProperty)property;
 - (NSString *) globalObject:(NSString *)object property:(GlobalDescribeStringProperty)property;

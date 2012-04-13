@@ -44,7 +44,7 @@
 
 - (id) initWithFrame:(CGRect)frame {
     if((self = [super initWithFrame:frame])) { 
-        self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"paperbg.jpeg"]];
+        self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"paperbg.png"]];
         
         if( !self.noNewsView ) {
             self.noNewsView = [[[UIView alloc] initWithFrame:CGRectMake( 0, 0, frame.size.width, 300 )] autorelease];
@@ -131,7 +131,7 @@
         ntvc.tableView.delaysContentTouches = YES;
         ntvc.tableView.canCancelContentTouches = YES;
         ntvc.tableView.separatorColor = UIColorFromRGB(0x999999);
-        ntvc.tableView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"paperbg.jpeg"]];
+        ntvc.tableView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"paperbg.png"]];
             
         self.newsTableViewController = ntvc;
         [ntvc release];

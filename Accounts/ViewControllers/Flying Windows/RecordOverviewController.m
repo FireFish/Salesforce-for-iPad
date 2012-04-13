@@ -505,7 +505,7 @@ int describesCompleted;
                                                                             leftItem:nil
                                                                            rightItem:rightItem];
                                                     
-                                                    self.gridView.hidden = ![self.sObjectType isEqualToString:@"Account"];
+                                                    self.gridView.hidden = NO;
                                                     
                                                     [self.scrollView addSubview:self.recordLayoutView];
                                                     [self.scrollView setContentOffset:CGPointZero animated:NO];
@@ -724,38 +724,73 @@ int describesCompleted;
 - (AQGridViewCell *) gridView: (AQGridView *) aGridView cellForItemAtIndex: (NSUInteger) index {    
     AccountGridCell *cell = [AccountGridCell cellForGridView:aGridView];
     
-    NSString *title = nil;
     NSString *value = nil;
     enum FieldType ft = TextField;
+    NSInteger indexCounter = index;
+        
+    ZKDescribeLayout *layout = [[SFVUtil sharedSFVUtil] layoutForRecord:self.account];
     
-    switch ( index ) {
-        case AccountNameCell:
-            title = NSLocalizedString(@"Account Name", @"Account name field");
-            value = [[SFVAppCache sharedSFVAppCache] nameForSObject:self.account];
-            break;
-        case AccountIndustryCell:
-            title = NSLocalizedString(@"Industry", @"Industry field");
-            value = [self.account objectForKey:@"Industry"];
-            break;
-            
-        case AccountPhoneCell:
-            title = NSLocalizedString(@"Phone", @"Phone field");
-            value = [self.account objectForKey:@"Phone"];
-            ft = PhoneField;
-            break;
-        case AccountWebsiteCell:
-            title = NSLocalizedString(@"Website", @"Website field");
-            value = [self.account objectForKey:@"Website"];
-            ft = URLField;
-            break;            
-        default:
-            break;
-    }
+    for( ZKDescribeLayoutSection *section in [layout detailLayoutSections] )
+        for( ZKDescribeLayoutRow *row in [section layoutRows] )
+            for( ZKDescribeLayoutItem *item in [row layoutItems] ) {
+                if( [item placeholder] )
+                    continue;
+                
+                NSArray *components = [item layoutComponents];
+                
+                if( !components || [components count] != 1 )
+                    continue;
+                
+                ZKDescribeLayoutComponent *component = [components objectAtIndex:0];
+                
+                if( [component type] != zkComponentTypeField )
+                    continue;
+                
+                if( [[SFVAppCache sharedSFVAppCache] doesField:[component value]
+                                                      onObject:[self.account objectForKey:kObjectTypeKey]
+                                                  haveProperty:FieldIsHTML] )
+                    continue;
+                
+                NSString *fieldType = [[SFVAppCache sharedSFVAppCache] field:[component value]
+                                                                    onObject:[self.account objectForKey:kObjectTypeKey]
+                                                              stringProperty:FieldType];
+                
+                if( [fieldType isEqualToString:@"reference"] )
+                    continue;
+                
+                indexCounter--;
+                
+                if( indexCounter < 0 ) {                    
+                    value = [[SFVUtil sharedSFVUtil] textValueForField:[component value]
+                                                        withDictionary:self.account];
+                    
+                    if( [fieldType isEqualToString:@"email"] )
+                        ft = EmailField;
+                    else if( [fieldType isEqualToString:@"url"] )
+                        ft = URLField;
+                    else if( [fieldType isEqualToString:@"phone"] )
+                        ft = PhoneField;
+                                        
+                    CGSize s = [self portraitGridCellSizeForGridView:aGridView];
+                    
+                    [cell setFrame:CGRectMake(0, 0, s.width, s.height)];
+                    
+                    [cell setupCellWithButton:[item label] 
+                                   buttonType:ft 
+                                   buttonText:value 
+                                   detailText:value];
+                    
+                    ((FieldPopoverButton *)cell.gridButton).detailViewController = self.detailViewController;
+                    [cell layoutCell];
+                    
+                    return cell;
+                }
+            }
     
     CGSize s = [self portraitGridCellSizeForGridView:aGridView];
     
     [cell setFrame:CGRectMake(0, 0, s.width, s.height)];
-    [cell setupCellWithButton:title buttonType:ft buttonText:value detailText:value];
+    [cell setupCellWithButton:nil buttonType:ft buttonText:nil detailText:nil];
     ((FieldPopoverButton *)cell.gridButton).detailViewController = self.detailViewController;
     [cell layoutCell];
     

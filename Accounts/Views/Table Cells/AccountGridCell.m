@@ -78,9 +78,9 @@
         self.gridButton = [FieldPopoverButton buttonWithText:( buttonType == URLField ? [SFVUtil truncateURL:buttonText] : buttonText )
                                                    fieldType:buttonType 
                                                   detailText:detailText];
-        self.gridButton.titleLabel.numberOfLines = 1;
+        self.gridButton.titleLabel.numberOfLines = 2;
         self.gridButton.titleLabel.textAlignment = UITextAlignmentLeft;
-        [self.gridButton.titleLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:17]];
+        [self.gridButton.titleLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:16]];
         [self.gridButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
         [self.contentView addSubview:self.gridButton];
     }
@@ -93,7 +93,7 @@
     r = self.gridLabel.frame;
     
     r.origin.x = 10;
-    r.origin.y = 10;
+    r.origin.y = 5;
     [self.gridLabel setFrame:r];
     
     FieldPopoverButton *gb = (FieldPopoverButton *)self.gridButton;
@@ -103,7 +103,7 @@
 
         r = gb.frame;    
         r.origin.x = 10;
-        r.origin.y = floorf( self.gridLabel.frame.origin.y + self.gridLabel.frame.size.height + 2 );
+        r.origin.y = CGRectGetMaxY(self.gridLabel.frame) + 10;
 
         CGSize s = [[gb titleForState:UIControlStateNormal] sizeWithFont:gb.titleLabel.font constrainedToSize:CGSizeMake( self.contentView.frame.size.width - 15, 25)];
         
@@ -112,7 +112,7 @@
         
         r.size.height = floorf( s.height );
         r.size.width = floorf( s.width );
-        
+                
         [gb setFrame:r];
     }
 }

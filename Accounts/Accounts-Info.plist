@@ -10,10 +10,12 @@
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFiles</key>
 	<array>
-		<string>ios_ipad.png</string>
-		<string>ios_appstore.png</string>
-		<string>Default-Landscape~ipad.png</string>
+		<string>appicon.png</string>
+		<string>appicon@2x.png</string>
 		<string>Default-Portrait~ipad.png</string>
+		<string>Default-Portrait@2x~ipad.png</string>
+		<string>Default-Landscape~ipad.png</string>
+		<string>Default-Landscape@2x~ipad.png</string>
 	</array>
 	<key>CFBundleIcons</key>
 	<dict>
@@ -21,17 +23,19 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>ios_ipad.png</string>
-				<string>ios_appstore.png</string>
-				<string>Default-Landscape~ipad.png</string>
+				<string>appicon.png</string>
+				<string>appicon@2x.png</string>
 				<string>Default-Portrait~ipad.png</string>
+				<string>Default-Portrait@2x~ipad.png</string>
+				<string>Default-Landscape~ipad.png</string>
+				<string>Default-Landscape@2x~ipad.png</string>
 			</array>
 			<key>UIPrerenderedIcon</key>
 			<true/>
 		</dict>
 	</dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.salesforce.internal.${PRODUCT_NAME:rfc1034identifier}</string>
+	<string>com.salesforce.account-browser</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -39,11 +43,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.2.3</string>
+	<string>2.3</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2.2.3</string>
+	<string>2.3</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMainNibFile</key>

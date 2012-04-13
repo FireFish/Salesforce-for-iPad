@@ -58,6 +58,8 @@
 - (void) loadNamesForRecords:(NSArray *)records;
 - (void) receivedObjectResponse:(NSArray *)records;
 
+- (void) loadRecentRecordsFromMetadata;
+
 @end
 
 // START:Delegate
